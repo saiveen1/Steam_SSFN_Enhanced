@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5d2787d2-14ea-44c8-b731-9a21832eed73" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/App.py" beforeDir="false" afterPath="$PROJECT_DIR$/App.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +59,7 @@
       <recent name="E:\Code\Own\Python\Steam_Tools" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.gui">
+  <component name="RunManager" selected="Python.App">
     <configuration name="App" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Steam_Tools" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -149,10 +150,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.App" />
         <item itemvalue="Python.gui" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python.steam_api" />
-        <item itemvalue="Python.App" />
       </list>
     </recent_temporary>
   </component>
@@ -164,7 +165,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1682678838175</updated>
-      <workItem from="1682678851084" duration="23374000" />
+      <workItem from="1682678851084" duration="25873000" />
     </task>
     <servers />
   </component>
@@ -193,7 +194,7 @@
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Steam_Tools$App.coverage" NAME="App Coverage Results" MODIFIED="1682679361111" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Steam_Tools$App.coverage" NAME="App Coverage Results" MODIFIED="1682706868408" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Steam_Tools$test.coverage" NAME="test Coverage Results" MODIFIED="1682689238713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Steam_Tools$steam_api.coverage" NAME="steam_api Coverage Results" MODIFIED="1682680838011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Steam_Tools$gui.coverage" NAME="gui Coverage Results" MODIFIED="1682701031617" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

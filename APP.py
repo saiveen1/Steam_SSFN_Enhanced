@@ -46,25 +46,24 @@ def handle_show_table(values, window, with_table_size, default_size):
     # update勾选框值会直接取反
     show_table = values['-SHOW-TABLE-']
     window['-TABLE-'].update(visible=show_table)
-    # window['-INFOS-'].update(visible=show_table)
+    window['-INFOS-'].update(visible=show_table)
     if show_table:
-        window['-PATH-'].expand(True, True)
-        window['-ACCOUNT-'].expand(True, True)
+        # window['-PATH-'].expand(True, True)
+        # window['-ACCOUNT-'].expand(True, True)
+        # window['-INFOS-'].expand(True, True)
         record_s2 = True
         if with_table_size:
             window.TKroot.geometry(with_table_size)
     else:
         window.TKroot.geometry(default_size)
-        window['-PATH-'].expand(False, False)
-        window['-PATH-'].Widget.config(width=20, height=3)
-        window['-ACCOUNT-'].expand(False, False)
-        window['-ACCOUNT-'].Widget.config(width=20, height=3)
+        # window['-INFOS-'].expand(False, False)
+        # window['-INFOS-'].Widget.config(width=20, height=12)
         record_s2 = False
     return record_s1, record_s2
 
 
 def show_window():
-    gui_layout = layout.create_main_layout() + layout.create_account_layout() + layout.create_table_layout()
+    gui_layout = layout.create_infos_layout() + layout.create_table_layout()
 
     # qq:1186565583
     window = pSG.Window('By saiveen', gui_layout, resizable=True)

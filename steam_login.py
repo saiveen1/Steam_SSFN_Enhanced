@@ -92,7 +92,7 @@ class SteamLogin:
             self.save_file(ssfn_str, ssfn_response)
             return None
 
-    def login(self, is_old, account, steam_path):
+    def login(self, account, steam_path):
         subprocess.Popen('taskkill /F /IM steam.exe', creationflags=subprocess.DETACHED_PROCESS)
         # print("正在启动或者关闭steam")
         time.sleep(1)
@@ -105,6 +105,9 @@ class SteamLogin:
             return ssfn_ret
 
         time.sleep(1)
+
+        is_old = True if os.path.exists(steam_path + '/' + r"steam.cfg") else False
+
         steam = steam_path + '/' + r"steam.exe"
         if is_old is True:
             # 老版steam

@@ -11,34 +11,38 @@ def get_window_size(window):
     return size
 
 
-def thread_account_table(window, account_str: str, show_table: bool):
+def thread_account_table(window, account_str: str, api_check):
     """ 更新账号区域
         涉及到api操作，第一次调用显示原有信息
         第二次网络查询，其实可以改到get_account 里面，不过懒得动了
     """
     steam_acc = SteamAccount(account_str)
+
+    # 第一次查询不要使用api，直接更新账户信息
     result = steam_acc.get_account_info(api_check=False)
     if result is None:
         return
     table_data = [[result.get(k, '') for k in layout.table_header]]
-    window.write_event_value('-UPDATE-TABLE-', (table_data, show_table))
-    if isinstance(account_str, tuple):
-        pSG.popup_error(account_str[1])
-        return
-    # header = window['-TABLE-'].Widget.cget('columns')
-    result = steam_acc.get_account_info(api_check=True)
-    table_data = [[result.get(k, '') for k in layout.table_header]]
-    window.write_event_value('-UPDATE-TABLE-', (table_data, show_table))
+    window.write_event_value('-UPDATE-TABLE-', (table_data, False))
+
+    if api_check and result['steamid'] != '':
+        # header = window['-TABLE-'].Widget.cget('columns')
+        result = steam_acc.get_account_info(api_check=api_check)
+        window.write_event_value('-UPDATE-TABLE-', (result, True))
 
 
-def login_steam(account, is_old):
+def login_steam(account_str, is_old, steam_path):
     try:
         steam_login = SteamLogin()
-        login_status = steam_login.login(is_old=is_old, account=account)
+        account = SteamAccount(account_str)
+        account = account.get_account_info()
+        if account is None:
+            return -1
+        login_status = steam_login.login(is_old=is_old, account=account, steam_path=steam_path)
         if login_status is not None:
             pSG.popup_error(login_status, title='ssfndownload出错！')
     except Exception as exp:
-        pSG.popup_error(exp, type(exp), title='Unknown error')
+        pSG.popup_error(exp, type(exp), title='未知错误 联系qq1186565583')
 
 
 def handle_show_table(values, window, with_table_size, default_size):
@@ -80,6 +84,7 @@ def show_window():
 
     while True:
         event, values = window.read()
+        print(event, values['-TABLE-'])
         if event is None:
             break
 
@@ -100,16 +105,7 @@ def show_window():
             account = values['-ACCOUNT-']
             if account != prev_account and account != layout.default_account and account is not None and account != '':
                 show_table = values['-SHOW-TABLE-']
-                """
-                如果没勾选拓展则不查询消息
-                account = su.get_account(account, show_table)
 
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    # 使用线程池进行API查询
-                    future = executor.submit(su.get_account, account, show_table)
-                    future.add_done_callback(lambda f: update_table(f, window, show_table))
-                    prev_account = account
-                """
                 thread = threading.Thread(target=thread_account_table, args=(window, account, show_table))
                 # 表示将创建的线程设置为守护线程。守护线程是在后台运行的线程，当主线程退出时，它会被强制结束而不会完成所有的操作。
                 thread.daemon = True
@@ -117,14 +113,42 @@ def show_window():
 
         # 利用线程以防api查询阻塞
         elif event == '-UPDATE-TABLE-':
-            table_data, visible = values[event]
-            window['-TABLE-'].update(values=table_data, visible=visible)
+            data, api = values[event]
+            if isinstance(data, tuple):
+                if data[0] == -1:
+                    window['-INFOS-'].update('steamid 输入错误！')
+                elif data[0] == -2:
+                    window['-INFOS-'].update('网络错误！')
+                continue
+            if api is False or data['steamid'] == '':
+                window['-TABLE-'].update(values=data)
+            else:
+                num_game_bans = data['NumberOfGameBans']
+                last_ban = '' if num_game_bans == 0 else '上次封禁时间: '
+                line = '' if num_game_bans == 0 else '\n'
+                vac_ban = '是' if data['VACBanned'] is True else '否'
+                number_vac_bans = '' if vac_ban == '否' else data['NumberOfVACBans']
+                pubg_total, pubg_2week = [None] * 2
+                for d in data['games']:
+                    if d['appid'] == 578080:
+                        pubg_total = d['playtime_forever']
+                        pubg_2week = d['playtime_2weeks']
+                # pubg_total = [d['playtime_forever'] for d in data if d['appid'] == 578080][0]
+                data = f"游戏封禁：{num_game_bans}\n" \
+                       f"{last_ban}{data['LastBanTime']}{line}" \
+                       f"Vac封禁: {vac_ban}\n" \
+                       f"{'' if vac_ban == '否' else 'Vac封禁个数: '}{number_vac_bans}\n" \
+                       f"共{data['game_count']}个游戏\n" \
+                       f"吃鸡总时长: {pubg_total}小时\n" \
+                       f"吃鸡最近两周时长: {pubg_2week}小时"
+                window['-INFOS-'].update(data)
+                # window['-TABLE-'].update(row_colors=(0, 'white', 'red'))
 
         elif event in ('旧版登录', '新版登录'):
-            if account is None:
+            result = login_steam(account_str=account, is_old=(event == '旧版登录'), steam_path=values['-PATH-'])
+            if result == -1:
                 pSG.popup_error('请注意账号格式！！！\n账号----密码----ssfn')
                 continue
-            login_steam(account=account, is_old=(event == '旧版登录'))
 
         elif event == '-SHOW-TABLE-':
             record_s1, record_s2 = handle_show_table(values, window, with_table_size, default_size)

@@ -61,7 +61,7 @@ infos_txt = ''
 
 def create_table_layout() -> list[list[pSG.Element]]:
     table = [pSG.Table(key='-TABLE-', values=[], headings=table_header,
-                       col_widths=header_width, justification='left', auto_size_columns=False,
+                       col_widths=header_width, justification='center', auto_size_columns=False,
                        num_rows=10, visible=False)]
     # multiline = [pSG.Multiline(key='-INFOS-', default_text=infos_txt, size=(60, 12),
     #                            enable_events=True, visible=False)]

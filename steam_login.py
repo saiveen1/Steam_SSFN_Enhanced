@@ -48,8 +48,10 @@ class SteamLogin:
             f.write(ssfn_response.content)
             # print(f'已成功写入文件 {filename}')
 
-    def ssfn_download(self, ssfn_str):
-        self.steam_path = self.get_steam_path()
+    def ssfn_download(self, ssfn_str, steam_path):
+        # 因为steam路径可能会改变，不能用成员变量
+        self.steam_path = steam_path
+
         self.ssfn_str = ssfn_str
         send_url = url + self.ssfn_str
         self.init_ssfn()
@@ -90,11 +92,11 @@ class SteamLogin:
             self.save_file(ssfn_str, ssfn_response)
             return None
 
-    def login(self, is_old, account):
+    def login(self, is_old, account, steam_path):
         subprocess.Popen('taskkill /F /IM steam.exe', creationflags=subprocess.DETACHED_PROCESS)
         # print("正在启动或者关闭steam")
         time.sleep(1)
-        ssfn_ret = self.ssfn_download(account['ssfn'])
+        ssfn_ret = self.ssfn_download(account['ssfn'], steam_path)
         # 下载出错
         if ssfn_ret == -1:
             return '未找到授权！请自行将授权放到ssfn_local登录'
@@ -103,7 +105,7 @@ class SteamLogin:
             return ssfn_ret
 
         time.sleep(1)
-        steam = self.steam_path + '/' + r"steam.exe"
+        steam = steam_path + '/' + r"steam.exe"
         if is_old is True:
             # 老版steam
             subprocess.Popen(steam + ' -login ' + str(account['username']) + ' ' + str(account['password']))

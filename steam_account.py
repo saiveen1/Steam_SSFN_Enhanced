@@ -24,9 +24,10 @@ class SteamAccount:
         SteamAccount.api = WebAPI(key='0F6C12E262EE5101755F668842217EE7')
 
     def __init__(self, account_str):
+        self.is_danger = None
         self.account_str = account_str
         self.steam_id = None
-
+        self.acc_d_info = None
     # 会占用线程时间, 单启动一个线程获取
 
     def parse_login_info(self) -> dict[str:str]:
@@ -34,12 +35,13 @@ class SteamAccount:
         result = re.findall(pattern, self.account_str)
         if result:
             self.steam_id = result[0][3] if result[0][3] else ''  # 判断是否存在17位数字
-            extra, sale = self.account_str.split('----'.join([i for i in result[0] if i]))
-            return {"username": result[0][0], "password": result[0][1],
-                    "ssfn": result[0][2], "steamid": self.steam_id,
-                    "extra_info": extra.rstrip(),
-                    "sale_info": sale.lstrip('----')
-                    }
+            remark, sale = self.account_str.split('----'.join([i for i in result[0] if i]))
+            self.acc_d_info = {"remark": remark.rstrip(),
+                               "username": result[0][0], "password": result[0][1],
+                               "ssfn": result[0][2], "steamid": self.steam_id,
+                               "sale_info": sale.lstrip('----')
+                               }
+            return self.acc_d_info
         else:
             return None
 
@@ -54,7 +56,6 @@ class SteamAccount:
             last_ban_time = datetime.datetime.now() - datetime.timedelta(days=days_since_last_ban)
             last_ban_time = last_ban_time.replace(second=0, microsecond=0).strftime('%Y-%m-%d')
         data['players'][0]['LastBanTime'] = last_ban_time
-
         return data['players'][0]
 
     def get_game_info(self) -> dict[str:list]:
@@ -89,7 +90,14 @@ class SteamAccount:
         except requests.exceptions.RequestException as exp:
             return -2, exp
 
-        return {**login_info, **bans_info, **game_info}
+        if bans_info['NumberOfGameBans'] > 0:
+            self.is_danger = True
+            if login_info['remark'] != '':
+                self.account_str = self.account_str.replace(login_info['remark'], '永久')
+            login_info['remark'] = '永久'
+
+        self.acc_d_info = {**login_info, **bans_info, **game_info}
+        return self.acc_d_info
 
     def get_owned_games(self):
         # ...

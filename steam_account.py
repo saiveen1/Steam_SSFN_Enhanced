@@ -25,17 +25,18 @@ class SteamAccount:
 
     def __init__(self, account_str):
         self.is_danger = None
-        self.account_str = account_str
+        self.acc_str = account_str
         self.steam_id = None
         self.acc_d_info = None
+        self.get_account_info(api_check=False)
     # 会占用线程时间, 单启动一个线程获取
 
     def parse_login_info(self) -> dict[str:str]:
         pattern = r'(\S+?)----(\S+?)----(ssfn\d+)----(\d+)?'  # 匹配17位数字的正则表达式
-        result = re.findall(pattern, self.account_str)
+        result = re.findall(pattern, self.acc_str)
         if result:
             self.steam_id = result[0][3] if result[0][3] else ''  # 判断是否存在17位数字
-            remark, sale = self.account_str.split('----'.join([i for i in result[0] if i]))
+            remark, sale = self.acc_str.split('----'.join([i for i in result[0] if i]))
             self.acc_d_info = {"remark": remark.rstrip(),
                                "username": result[0][0], "password": result[0][1],
                                "ssfn": result[0][2], "steamid": self.steam_id,
@@ -93,7 +94,7 @@ class SteamAccount:
         if bans_info['NumberOfGameBans'] > 0:
             self.is_danger = True
             if login_info['remark'] != '':
-                self.account_str = self.account_str.replace(login_info['remark'], '永久')
+                self.acc_str = self.acc_str.replace(login_info['remark'], '永久', 1)
             login_info['remark'] = '永久'
 
         self.acc_d_info = {**login_info, **bans_info, **game_info}

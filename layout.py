@@ -34,7 +34,8 @@ def create_account_layout() -> list[list[pSG.Element]]:
 
 def create_infos_layout() -> list[list[pSG.Element]]:
     left = create_path_layout() + create_account_layout()
-    right = [pSG.Multiline(key='-INFOS-', default_text='联系QQ: 1186565583', size=(54, 12),
+    right = [pSG.Multiline(key='-INFOS-', default_text='联系QQ: 1186565583'
+                                                       '\n双击修改，右键登录，支持多行复制', size=(54, 12),
                            enable_events=True, visible=True)]
     return [
         [pSG.Column(left), pSG.Column([right])]
@@ -55,6 +56,7 @@ def create_table_layout():
                        headings=table_header,
                        col_widths=header_width,
                        justification='center',
+                       background_color='#0080ff',
                        auto_size_columns=False,
                        right_click_selects=True,
                        vertical_scroll_only=True,

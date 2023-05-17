@@ -58,49 +58,58 @@ class SteamLogin:
         try:
             if os.path.exists(filename):
                 shutil.copy(filename, self.steam_path)
-        except PermissionError:
-            return values.ERRORS.WRITE_PERMISSION_ERROR
-        # 如果不存在从网上下载
-        else:
-            try:
-                result = requests.get(send_url, headers=values.headers, verify=False)
-                # 防止爬虫延迟获得
-                # 如果没找到抛出AttributeError异常
-                code = re.search(r'\?sec=\w+', result.content.decode('utf-8')).group(0)
-                result.close()
-                send_url = send_url + code
-                ssfn_response = requests.get(send_url, headers=values.headers, verify=False)
-                self.save_ssfn_file(ssfn_str, ssfn_response)
-            # ssfnbox未找到授权使用另一个地址
-            # 一键授权逆向地址
-            except AttributeError:
-                for url in values.l_backup_urls:
-                    send_url = url + self.ssfn_str
-                    try:
-                        ssfn_response = requests.get(send_url, headers=values.headers, verify=False)
-                        # 连接超时
-                        if ssfn_response.status_code == 502:
-                            l_status.append(values.ERRORS.SSFNError.SSFN_DOWNLOAD_ERROR)
-                            continue
+            else:
+                try:
+                    result = requests.get(send_url, headers=values.headers, verify=False)
+                    # 防止爬虫延迟获得
+                    # 如果没找到抛出AttributeError异常
+                    code = re.search(r'\?sec=\w+', result.content.decode('utf-8')).group(0)
+                    result.close()
+                    send_url = send_url + code
+                    ssfn_response = requests.get(send_url, headers=values.headers, verify=False)
+                    self.save_ssfn_file(ssfn_str, ssfn_response)
+                    if values.DEBUG:
+                        print('ssfnbox下载成功')
+                # ssfnbox未找到授权使用另一个地址
+                # 一键授权逆向地址
+                except AttributeError:
+                    for url in values.l_backup_urls:
+                        send_url = url + self.ssfn_str
                         try:
-                            # 未找到授权
-                            is_404 = True if ssfn_response.content.decode('utf-8').find('Not Found') > 0 else False
-                            if is_404 is True:
-                                l_status.append(values.ERRORS.STEAM_NOT_FOUND_ERROR)
+                            ssfn_response = requests.get(send_url, headers=values.headers, verify=False)
+                            # 连接超时
+                            if ssfn_response.status_code == 502:
+                                l_status.append(values.STATUS.SSFNError.SSFN_DOWNLOAD_ERROR)
+                                if values.DEBUG:
+                                    print(f'{send_url}未响应')
                                 continue
-                        # 此异常代表下载到了正确文件，非“异常”，只是写法上比较简单
-                        except UnicodeDecodeError:
-                            self.save_ssfn_file(ssfn_str, ssfn_response)
-                            break
-                    except requests.exceptions.SSLError:
-                        l_status.append(values.ERRORS.SSFNError.NET_SSL_ERROR)
-                        continue
-                    except Exception as exp:
-                        return exp
+                            try:
+                                # 未找到授权
+                                is_404 = True if ssfn_response.content.decode('utf-8').find('Not Found') > 0 else False
+                                if is_404 is True:
+                                    l_status.append(values.STATUS.STEAM_NOT_FOUND_ERROR)
+                                    if values.DEBUG:
+                                        print(f'{send_url}未找到授权')
+                                    continue
+                            # 此异常代表下载到了正确文件，非“异常”，只是写法上比较简单
+                            except UnicodeDecodeError:
+                                self.save_ssfn_file(ssfn_str, ssfn_response)
+                                l_status.append(values.STATUS.SSFN_DOWNLOAD_SUCCESS)
+                                if values.DEBUG:
+                                    print(f'{send_url}下载成功')
+                                break
+                        except requests.exceptions.SSLError:
+                            l_status.append(values.STATUS.SSFNError.NET_SSL_ERROR)
+                            continue
+                        except Exception as exp:
+                            return exp
 
-            ssfn_response.close()
-            # 只返回最后一个备用网址的状态
-            return None if len(l_status) == 0 else l_status[len(l_status) - 1]
+                ssfn_response.close()
+                # 只返回最后一个备用网址的状态
+                return None if len(l_status) == 0 else l_status[len(l_status) - 1]
+        except PermissionError:
+            return values.STATUS.WRITE_PERMISSION_ERROR
+        # 如果不存在从网上下载
 
     # 虽然self 里有参数path，但是前端path可能会改变，所以还是需要传递一个参数
     def login(self, d_acc_info, steam_path):
@@ -118,12 +127,14 @@ class SteamLogin:
         ssfn_ret = self.ssfn_download(d_acc_info['ssfn'], self.steam_path)
         # 下载出错
 
-        if ssfn_ret == values.ERRORS.WRITE_PERMISSION_ERROR:
+        if ssfn_ret == values.STATUS.WRITE_PERMISSION_ERROR:
             return 'ssfn写入失败，请以管理员启动！'
-        elif ssfn_ret in vars(values.ERRORS.SSFNError).values() and ssfn_ret is not None:
+        if ssfn_ret == values.STATUS.SSFN_DOWNLOAD_SUCCESS:
+            pass
+        elif ssfn_ret in vars(values.STATUS.SSFNError).values() and ssfn_ret is not None:
             p = os.path.normpath(os.path.join(self.current_path, values.loc_path))
             subprocess.Popen(f'explorer {p}')
-            t = '' if ssfn_ret == values.ERRORS.SSFNError.SSFN_NOT_FOUND else '备用网站连接超时，'
+            t = '' if ssfn_ret == values.STATUS.SSFNError.SSFN_NOT_FOUND else '备用网站连接超时，'
             return t + '未找到授权！\n请自行将授权放到ssfn_local登录'
         # 其他异常
         elif ssfn_ret is not None:

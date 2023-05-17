@@ -21,7 +21,11 @@ class SteamAccount:
 
     @staticmethod
     def thread_webapi():
-        SteamAccount.api = WebAPI(key='0F6C12E262EE5101755F668842217EE7')
+        try:
+            SteamAccount.api = WebAPI(key='0F6C12E262EE5101755F668842217EE7')
+        # except requests.exceptions as exp:
+        except requests.exceptions.SSLError:
+            SteamAccount.api = 'Net Error'
 
     def __init__(self, account_str):
         self.is_danger = None
@@ -34,8 +38,13 @@ class SteamAccount:
     def parse_login_info(self) -> dict[str:str]:
         pattern = r'(\S+?)----(\S+?)----(ssfn\d+)----(\d+)?'  # 匹配17位数字的正则表达式
         result = re.findall(pattern, self.acc_str)
+
+        # 可以加一个括号，匹配出来的会多一个----
+        if len(result) == 0:
+            pattern = r'(\S+?)----(\S+?)----(ssfn\d+)'
+            result = re.findall(pattern, self.acc_str)
         if result:
-            self.steam_id = result[0][3] if result[0][3] else ''  # 判断是否存在17位数字
+            self.steam_id = '' if len(result[0]) == 3 else result[0][3] if result[0][3] else ''  # 判断是否存在17位数字
             remark, sale = self.acc_str.split('----'.join([i for i in result[0] if i]))
             self.acc_d_info = {"remark": remark.rstrip(),
                                "username": result[0][0], "password": result[0][1],
@@ -49,6 +58,7 @@ class SteamAccount:
     def get_games_ban(self) -> dict[str:str]:
         if SteamAccount.api is None:
             self.thread.join()
+
         data = SteamAccount.api.ISteamUser.GetPlayerBans(format='json', steamids=self.steam_id)
         # api判断的不准确，各种情况，还是要直接通过cookie 获取封禁具体
         days_since_last_ban = data['players'][0].pop('DaysSinceLastBan')
@@ -82,6 +92,8 @@ class SteamAccount:
         try:
             if SteamAccount.api is None:
                 SteamAccount.get_webAPI()
+            if SteamAccount.api == 'Net Error':
+                return -3, SteamAccount.api
             bans_info = self.get_games_ban()
             game_info = self.get_game_info()
         except Exception as exp:
@@ -95,6 +107,8 @@ class SteamAccount:
             self.is_danger = True
             if login_info['remark'] != '':
                 self.acc_str = self.acc_str.replace(login_info['remark'], '永久', 1)
+            else:
+                self.acc_str = '永久 ' + self.acc_str
             login_info['remark'] = '永久'
 
         self.acc_d_info = {**login_info, **bans_info, **game_info}

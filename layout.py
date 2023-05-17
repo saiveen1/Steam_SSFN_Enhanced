@@ -36,7 +36,7 @@ def create_infos_layout() -> list[list[pSG.Element]]:
     left = create_path_layout() + create_account_layout()
     right = [pSG.Multiline(key='-INFOS-', default_text='联系QQ: 1186565583'
                                                        '\n双击修改，右键登录，支持多行复制', size=(54, 12),
-                           enable_events=True, visible=True)]
+                           enable_events=True, visible=True, disabled=True)]
     return [
         [pSG.Column(left), pSG.Column([right])]
     ]

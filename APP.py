@@ -6,6 +6,7 @@ import steam_account
 import util
 from steam_login import SteamLogin
 from steam_account import SteamAccount
+import values
 
 l_csteam_d = []
 
@@ -50,8 +51,8 @@ def thread_account_table(window, account_str: str, api_check):
                 if isinstance(result, tuple):
                     if result[0] == -1:
                         window['-INFOS-'].update('steamid 输入错误！')
-                    elif result[0] == -2:
-                        window['-INFOS-'].update('网络错误！')
+                    elif result[0] in [-2, -3]:
+                        window['-INFOS-'].update('网络错误！信息查询不可用！\n检查代理，加速等，重新打开软件')
                         continue
             accs_info.append(result)
 
@@ -66,16 +67,16 @@ def login_steam(o_acc: steam_account.SteamAccount, steam_path=''):
         if acc_dict is None:
             pSG.popup_error('请注意账号格式！！！\n账号----密码----ssfn')
             return
-        login_status = o_steam_login.login(account=acc_dict, steam_path=steam_path)
+        login_status = o_steam_login.login(d_acc_info=acc_dict, steam_path=steam_path)
         if login_status is not None:
-            pSG.popup_error(login_status, title='ssfndownload出错！')
+            pSG.popup_error(login_status, title='文件错误')
     except Exception as exp:
         pSG.popup_error(exp, type(exp), title='未知错误 联系qq1186565583')
 
 
 def get_multi_info(data: dict) -> str:
     if type(data) != dict:
-        return "格式不正确"
+        return "格式不正确或未输入steamid"
     num_game_bans = data['NumberOfGameBans']
     last_ban = '' if num_game_bans == 0 else '上次封禁时间: '
     line = '' if num_game_bans == 0 else '\n'
@@ -192,14 +193,18 @@ def show_window():
         # 鼠标双击，需要window 处绑定事件
         elif event == '-TABLE-+-double click-':
             pos = window['-TABLE-'].get_last_clicked_position()
-            selected_acc_str = l_csteam_d[pos[0]].acc_str
+            index = pos[0]
+            if index < 0 or index >= len(l_csteam_d):
+                continue
+            else:
+                selected_acc_str = l_csteam_d[pos[0]].acc_str
             # 在主进程中调用函数，等待用户输入完成
             text = layout.open_multiline_window(default_text=selected_acc_str)
             if text is not None:
-                l_csteam_d[pos[0]].acc_str = text
-                l_csteam_d[pos[0]].get_account_info(api_check=False)
-                new_row = [l_csteam_d[pos[0]].acc_d_info.get(k, '') for k in layout.table_header]
-                table_val[pos[0]][1:] = new_row[1:]
+                l_csteam_d[index].acc_str = text
+                l_csteam_d[index].get_account_info(api_check=False)
+                new_row = [l_csteam_d[index].acc_d_info.get(k, '') for k in layout.table_header]
+                table_val[index][1:] = new_row[1:]
                 window['-TABLE-'].update(values=table_val)
                 mark_danger_acc(window, danger_row, ok_row)
 

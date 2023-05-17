@@ -3,6 +3,7 @@ import PySimpleGUI as pSG
 
 import layout
 import steam_account
+import vals
 from steam_login import SteamLogin
 from steam_account import SteamAccount
 
@@ -36,8 +37,9 @@ def login_steam(o_acc: steam_account.SteamAccount, steam_path=''):
 
 
 def show_window():
-    gui_layout = layout.create_main_layout() + layout.create_account_layout()
-
+    gui_layout = [
+            [pSG.Frame('', layout=layout.create_main_layout() + layout.create_account_layout())]
+    ]
     window = pSG.Window('By saiveen', gui_layout, resizable=False)
 
     o_acc = None
@@ -60,7 +62,7 @@ def show_window():
 
         elif event == '-ACCOUNT-':
             str_acc = values['-ACCOUNT-']
-            if str_acc != prev_account and str_acc != layout.default_account and str_acc is not None and str_acc != '':
+            if str_acc != prev_account and str_acc != vals.default_account and str_acc is not None and str_acc != '':
                 thread = threading.Thread(target=account_check, args=(window, str_acc))
                 # 表示将创建的线程设置为守护线程。守护线程是在后台运行的线程，当主线程退出时，它会被强制结束而不会完成所有的操作。
                 thread.daemon = True
@@ -69,11 +71,14 @@ def show_window():
         # 利用线程以防api查询阻塞
         elif event == '-UPDATE-ACC-INFO-':
             o_acc = values[event]
-
-        elif event == '登录':
+            pSG.PopupNoTitlebar('正在启动steam客户端', auto_close=True,
+                                auto_close_duration=2, button_type=5)
+        elif event == vals.EVENTS.login:
             if str_acc is None:
                 pSG.popup_error('请注意账号格式！！！\n账号----密码----ssfn')
                 continue
+            pSG.PopupNoTitlebar('正在启动steam客户端', auto_close=True,
+                                auto_close_duration=2, button_type=5)
             login_steam(o_acc=o_acc, steam_path=values['-PATH-'])
 
     window.close()

@@ -5,6 +5,8 @@ import threading
 import requests
 from steam.webapi import WebAPI
 
+import vals
+
 
 class SteamAccount:
     api = None
@@ -27,12 +29,13 @@ class SteamAccount:
         except requests.exceptions.SSLError:
             SteamAccount.api = 'Net Error'
 
-    def __init__(self, account_str):
+    def __init__(self, account_str, api_check=False):
         self.is_danger = None
         self.str_acc = account_str
         self.steam_id = None
         self.d_acc_info = None
-        self.get_account_info(api_check=False)
+        self.get_account_info(api_check=api_check)
+        self.api_check = api_check
     # 会占用线程时间, 单启动一个线程获取
 
     def parse_login_info(self) -> dict[str:str]:
@@ -45,7 +48,8 @@ class SteamAccount:
                 pattern = r'(\S+?)----(\S+?)----(ssfn\d+)'
                 result = re.findall(pattern, self.str_acc)
             if result:
-                self.steam_id = '' if len(result[0]) == 3 else result[0][3] if result[0][3] else ''  # 判断是否存在17位数字
+                self.steam_id = '' if len(result[0]) == 3 else result[0][3] if result[0][3] is not None else ''
+                # 判断是否存在17位数字
                 remark, sale = self.str_acc.split('----'.join([i for i in result[0] if i]))
                 self.d_acc_info = {"remark": remark.rstrip(),
                                    "username": result[0][0], "password": result[0][1],
@@ -81,9 +85,54 @@ class SteamAccount:
                                                              )
         return data['response']
 
+    def get_multi_info(self, api_check=True) -> str:
+        self.api_check = api_check
+        self.get_account_info(api_check=True)
+        if self.steam_id == vals.STATUS.ApiERROR.STEAMID_NOT_FOUND:
+            return "未找到玩家，请确认steamid是否正确"
+        elif self.api_check is False:
+            return 'api查询已关闭'
+        elif self.d_acc_info is None or self.steam_id == '':
+            return '信息输入不正确'
+        num_game_bans = self.d_acc_info['NumberOfGameBans']
+        last_ban = '' if num_game_bans == 0 else '上次封禁时间: '
+        line = '' if num_game_bans == 0 else '\n'
+        vac_ban = '是' if self.d_acc_info['VACBanned'] is True else '否'
+        number_vac_bans = '' if vac_ban == '否' else self.d_acc_info['NumberOfVACBans']
+        pubg_total, pubg_2week, cs_total, cs_2week = [None] * 4
+        games_summary = "玩家资料已隐藏"
+        if 'games' in self.d_acc_info:
+            for d in self.d_acc_info['games']:
+                if d['appid'] == 578080:
+                    pubg_total = int(d['playtime_forever'] / 60)
+                    pubg_2week = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
+                if d['appid'] == 730:
+                    cs_total = int(d['playtime_forever'] / 60)
+                    cs_2week = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
+            # pubg_total = [d['playtime_forever'] for d in data if d['appid'] == 578080][0]
+            csgo = '' if cs_total is None or cs_total == 0 else f"CSGO总时长: {cs_total}小时\n" \
+                                                                f"CSGO最近两周时长: {cs_2week}小时\n"
+            games_summary = f"共{self.d_acc_info['game_count']}个游戏\n" \
+                            f"吃鸡总时长: {pubg_total}小时\n" \
+                            f"吃鸡最近两周时长: {pubg_2week}小时\n" \
+                            f"{csgo}" \
+                            f"额外信息: {self.d_acc_info['remark']}\n" \
+                            f"购买信息：{self.d_acc_info['sale_info']}"
+
+        multi_info = f"游戏封禁：{num_game_bans}   " \
+                     f"{last_ban}{self.d_acc_info['LastBanTime']}{line}" \
+                     f"Vac封禁: {vac_ban}      " \
+                     f"{'' if vac_ban == '否' else 'Vac封禁个数: '}{number_vac_bans}\n" \
+                     + games_summary
+
+        return multi_info
+
     def get_account_info(self, api_check=False) -> dict[str:str]:
         # 这里可以优化以下，不过懒得弄了
-        d_login_info = self.parse_login_info()
+        if self.d_acc_info is None:
+            d_login_info = self.parse_login_info()
+        else:
+            d_login_info = self.d_acc_info
         if d_login_info is None:
             return None
         if d_login_info['steamid'] == '' or api_check is False:
@@ -97,13 +146,15 @@ class SteamAccount:
                 return -3, SteamAccount.api
             bans_info = self.get_games_ban()
             game_info = self.get_game_info()
-        except Exception as exp:
-            return -1, exp
+        except IndexError as exp:
+            self.steam_id = vals.STATUS.ApiERROR.STEAMID_NOT_FOUND
+            return self.steam_id, exp
         except requests.exceptions.SSLError:
             bans_info['GameBans'] = 'Net error'
         except requests.exceptions.RequestException as exp:
             return -2, exp
-
+        except Exception as exp:
+            return -1, exp
         if bans_info['NumberOfGameBans'] > 0:
             self.is_danger = True
             if d_login_info['remark'] != '':

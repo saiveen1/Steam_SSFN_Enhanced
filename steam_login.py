@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 
 import requests
 import winreg
@@ -123,8 +124,8 @@ class SteamLogin:
         # 如果不存在从网上下载
 
     # 虽然self 里有参数path，但是前端path可能会改变，所以还是需要传递一个参数
-    def login(self, d_acc_info, steam_path):
-        self.steam_path = steam_path
+    def login(self, d_acc_info, steam_path=''):
+        self.steam_path = steam_path if steam_path != '' else self.steam_path
 
         # # 检查sys.check 是否为True以确定是否经过了pyinstaller 打包
         # if getattr(sys, 'frozen', False):
@@ -134,6 +135,7 @@ class SteamLogin:
         self.current_path = os.getcwd()
 
         subprocess.Popen('taskkill /F /IM steam.exe', creationflags=subprocess.DETACHED_PROCESS)
+
         ssfn_ret = self.ssfn_download(d_acc_info['ssfn'], self.steam_path)
         # 下载出错
 
@@ -150,8 +152,9 @@ class SteamLogin:
         elif ssfn_ret is not None:
             return ssfn_ret
 
+        # 新版steam必须延迟1s+
+        time.sleep(2)
         is_old = True if os.path.exists(self.steam_path + '/' + r"steam.cfg") else False
-
         steam_exe = self.steam_path + '/' + r"steam.exe"
         try:
             username = str(d_acc_info['username'])
@@ -162,6 +165,7 @@ class SteamLogin:
                 subprocess.Popen(f'{steam_exe} -login {username} {password}')
             else:
                 # subprocess.Popen( steam_exe + ' -windowed -bigpicture -login ' + username + ' ' + password)
+                print(f'{steam_exe} -windowed -bigpicture -login {username} {password}')
                 subprocess.Popen(f'{steam_exe} -windowed -bigpicture -login {username} {password}')
         except FileNotFoundError:
             subprocess.Popen(f'explorer {os.path.normpath(self.steam_path)}')

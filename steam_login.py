@@ -74,7 +74,7 @@ class SteamLogin:
                 for url in vals.l_urls:
                     send_url = url + self.ssfn_str
                     try:
-                        ssfn_response = requests.get(send_url, headers=vals.headers, verify=False)
+                        ssfn_response = requests.get(send_url, headers=vals.headers)
 
                         # 连接超时
                         if ssfn_response.status_code == 502:
@@ -91,7 +91,7 @@ class SteamLogin:
                                     code = re.search(r'\?sec=\w+', ssfn_response.content.decode('utf-8')).group(0)
                                     ssfn_response.close()
                                     send_url = send_url + code
-                                    ssfn_response = requests.get(send_url, headers=vals.headers, verify=False)
+                                    ssfn_response = requests.get(send_url, headers=vals.headers)
                                     is_404 = False
                                 except AttributeError:
                                     is_404 = True
@@ -165,7 +165,7 @@ class SteamLogin:
                 subprocess.Popen(f'{steam_exe} -login {username} {password}')
             else:
                 # subprocess.Popen( steam_exe + ' -windowed -bigpicture -login ' + username + ' ' + password)
-                print(f'{steam_exe} -windowed -bigpicture -login {username} {password}')
+                # print(f'{steam_exe} -windowed -bigpicture -login {username} {password}')
                 subprocess.Popen(f'{steam_exe} -windowed -bigpicture -login {username} {password}')
         except FileNotFoundError:
             subprocess.Popen(f'explorer {os.path.normpath(self.steam_path)}')

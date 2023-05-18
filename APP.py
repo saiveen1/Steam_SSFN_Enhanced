@@ -82,7 +82,7 @@ def show_window():
         elif event == '-UPDATE-ACC-INFO-':
             multi_info = values[event]
             size, pos = get_window_attr(window)
-            pSG.PopupNoTitlebar(multi_info, auto_close=False, non_blocking=True,
+            pSG.PopupNoTitlebar(multi_info, auto_close=True, non_blocking=True,
                                 auto_close_duration=20,
                                 button_type=POPUP_BUTTONS_OK,
                                 # 莫名其妙的位置，由于没有提供获取弹出窗体的size，所以只能随便试

@@ -22,6 +22,7 @@ class STATUS:
 
     class ApiERROR:
         STEAMID_NOT_FOUND = -1
+        API_NET_ERROR = -2
 
     SSFN_DOWNLOAD_SUCCESS = 6
     WRITE_PERMISSION_ERROR = 4

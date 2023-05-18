@@ -154,7 +154,13 @@ class SteamLogin:
 
         # 新版steam必须延迟1s+
         time.sleep(2)
-        is_old = True if os.path.exists(self.steam_path + '/' + r"steam.cfg") else False
+        steam_cfg_path = self.steam_path + '/' + r"steam.cfg"
+        is_old = False
+        if os.path.exists(steam_cfg_path):
+            with open(steam_cfg_path, 'r') as file:
+                content = file.read()
+                is_old = True if 'BootStrapperForceSelfUpdate = disable' in content else False
+
         steam_exe = self.steam_path + '/' + r"steam.exe"
         try:
             username = str(d_acc_info['username'])

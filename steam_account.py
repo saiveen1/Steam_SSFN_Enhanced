@@ -27,7 +27,7 @@ class SteamAccount:
             SteamAccount.api = WebAPI(key='0F6C12E262EE5101755F668842217EE7')
         # except requests.exceptions as exp:
         except requests.exceptions.SSLError:
-            SteamAccount.api = 'Net Error'
+            SteamAccount.api = vals.STATUS.ApiERROR.API_NET_ERROR
 
     def __init__(self, account_str, api_check=False):
         self.is_danger = None
@@ -94,6 +94,8 @@ class SteamAccount:
             return 'api查询已关闭'
         elif self.d_acc_info is None or self.steam_id == '':
             return '信息输入不正确'
+        elif SteamAccount.api == vals.STATUS.ApiERROR.API_NET_ERROR:
+            return "API网络连接错误！"
         num_game_bans = self.d_acc_info['NumberOfGameBans']
         last_ban = '' if num_game_bans == 0 else '上次封禁时间: '
         line = '' if num_game_bans == 0 else '\n'
@@ -142,7 +144,7 @@ class SteamAccount:
         try:
             if SteamAccount.api is None:
                 SteamAccount.get_webAPI()
-            if SteamAccount.api == 'Net Error':
+            if SteamAccount.api == vals.STATUS.ApiERROR.API_NET_ERROR:
                 return -3, SteamAccount.api
             bans_info = self.get_games_ban()
             game_info = self.get_game_info()

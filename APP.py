@@ -50,7 +50,7 @@ def show_window():
     gui_layout = [
         [pSG.Frame('', layout=layout.create_main_layout() + layout.create_account_layout())]
     ]
-    window = pSG.Window('By saiveen', gui_layout, resizable=False)
+    window = pSG.Window('By saiveen', layout.create_main_layout() + layout.create_account_layout(), resizable=False)
 
     str_acc = None
     # 用以检测account 是否发生了变化避免每次点击都会进入函数
@@ -85,6 +85,7 @@ def show_window():
             pSG.PopupNoTitlebar(multi_info, auto_close=False, non_blocking=True,
                                 auto_close_duration=20,
                                 button_type=POPUP_BUTTONS_OK,
+                                # 莫名其妙的位置，由于没有提供获取弹出窗体的size，所以只能随便试
                                 relative_location=(0, -pos[1] + size[1] // 7)
                                 )
         elif event == vals.EVENTS.login:

@@ -93,7 +93,7 @@ class SteamAccount:
         elif self.api_check is False:
             return 'api查询已关闭'
         elif self.d_acc_info is None or self.steam_id == '':
-            return '信息输入不正确'
+            return '未获取到steamid'
         elif SteamAccount.api == vals.STATUS.ApiERROR.API_NET_ERROR:
             return "API网络连接错误！"
         num_game_bans = self.d_acc_info['NumberOfGameBans']

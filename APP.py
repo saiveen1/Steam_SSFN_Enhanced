@@ -32,10 +32,10 @@ def thread_account_table(window, account_str: str, api_check):
         return
     table_data = []
     for o_acc in l_csteam_d:
-        if o_acc.acc_d_info is None:
+        if o_acc.d_acc_info is None:
             row_data = ['', '', '', '格式不正确']
         else:
-            row_data = [o_acc.acc_d_info.get(k, '') for k in layout.table_header]
+            row_data = [o_acc.d_acc_info.get(k, '') for k in layout.table_header]
         table_data.append(row_data)
     window.write_event_value('-UPDATE-TABLE-', (table_data, False))
 
@@ -44,9 +44,9 @@ def thread_account_table(window, account_str: str, api_check):
         accs_info = []
         result = None
         for o_acc in l_csteam_d:
-            if o_acc.acc_d_info is None:
-                result = o_acc.acc_str
-            elif o_acc.acc_d_info['steamid'] != "":
+            if o_acc.d_acc_info is None:
+                result = o_acc.str_acc
+            elif o_acc.d_acc_info['steamid'] != "":
                 result = o_acc.get_account_info(api_check=api_check)
                 if isinstance(result, tuple):
                     if result[0] == -1:
@@ -63,7 +63,7 @@ def thread_account_table(window, account_str: str, api_check):
 def login_steam(o_acc: steam_account.SteamAccount, steam_path=''):
     try:
         o_steam_login = SteamLogin()
-        acc_dict = o_acc.acc_d_info
+        acc_dict = o_acc.d_acc_info
         if acc_dict is None:
             pSG.popup_error('请注意账号格式！！！\n账号----密码----ssfn')
             return
@@ -72,43 +72,6 @@ def login_steam(o_acc: steam_account.SteamAccount, steam_path=''):
             pSG.popup_error(login_status, title='文件错误')
     except Exception as exp:
         pSG.popup_error(exp, type(exp), title='未知错误 联系qq1186565583')
-
-
-def get_multi_info(data: dict) -> str:
-    if type(data) != dict:
-        return "格式不正确或未输入steamid"
-    num_game_bans = data['NumberOfGameBans']
-    last_ban = '' if num_game_bans == 0 else '上次封禁时间: '
-    line = '' if num_game_bans == 0 else '\n'
-    vac_ban = '是' if data['VACBanned'] is True else '否'
-    number_vac_bans = '' if vac_ban == '否' else data['NumberOfVACBans']
-    pubg_total, pubg_2week, cs_total, cs_2week = [None] * 4
-    games_summary = "玩家资料已隐藏"
-    if 'games' in data:
-        for d in data['games']:
-            if d['appid'] == 578080:
-                pubg_total = int(d['playtime_forever'] / 60)
-                pubg_2week = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
-            if d['appid'] == 730:
-                cs_total = int(d['playtime_forever'] / 60)
-                cs_2week = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
-        # pubg_total = [d['playtime_forever'] for d in data if d['appid'] == 578080][0]
-        csgo = '' if cs_total is None or cs_total == 0 else f"CSGO总时长: {cs_total}小时\n" \
-                                                            f"CSGO最近两周时长: {cs_2week}小时\n"
-        games_summary = f"共{data['game_count']}个游戏\n" \
-                        f"吃鸡总时长: {pubg_total}小时\n" \
-                        f"吃鸡最近两周时长: {pubg_2week}小时\n" \
-                        f"{csgo}" \
-                        f"额外信息: {data['remark']}\n" \
-                        f"购买信息：{data['sale_info']}"
-
-    multi_info = f"游戏封禁：{num_game_bans}   " \
-                 f"{last_ban}{data['LastBanTime']}{line}" \
-                 f"Vac封禁: {vac_ban}      " \
-                 f"{'' if vac_ban == '否' else 'Vac封禁个数: '}{number_vac_bans}\n" \
-                 + games_summary
-
-    return multi_info
 
 
 def mark_danger_acc(window, danger_row: list, ok_row):
@@ -170,6 +133,7 @@ def show_window():
             data, api = values[event]
             if api is False:
                 for i in range(len(data)):
+                    print(i)
                     table_val[i][1:] = data[i][1:]
                 window['-TABLE-'].update(values=table_val)
             else:
@@ -201,9 +165,9 @@ def show_window():
             # 在主进程中调用函数，等待用户输入完成
             text = layout.open_multiline_window(default_text=selected_acc_str)
             if text is not None:
-                l_csteam_d[index].acc_str = text
+                l_csteam_d[index].str_acc = text
                 l_csteam_d[index].get_account_info(api_check=False)
-                new_row = [l_csteam_d[index].acc_d_info.get(k, '') for k in layout.table_header]
+                new_row = [l_csteam_d[index].d_acc_info.get(k, '') for k in layout.table_header]
                 table_val[index][1:] = new_row[1:]
                 window['-TABLE-'].update(values=table_val)
                 mark_danger_acc(window, danger_row, ok_row)

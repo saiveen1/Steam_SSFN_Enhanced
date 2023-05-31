@@ -101,22 +101,22 @@ class SteamAccount:
         line = '' if num_game_bans == 0 else '\n'
         vac_ban = '是' if self.d_acc_info['VACBanned'] is True else '否'
         number_vac_bans = '' if vac_ban == '否' else self.d_acc_info['NumberOfVACBans']
-        pubg_total, pubg_2week, cs_total, cs_2week = [None] * 4
+
         games_summary = "玩家资料已隐藏"
         if 'games' in self.d_acc_info:
             for d in self.d_acc_info['games']:
                 if d['appid'] == 578080:
-                    pubg_total = int(d['playtime_forever'] / 60)
-                    pubg_2week = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
+                    d['pubg_total'] = int(d['playtime_forever'] / 60)
+                    d['pubg_2week'] = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
                 if d['appid'] == 730:
-                    cs_total = int(d['playtime_forever'] / 60)
-                    cs_2week = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
-            # pubg_total = [d['playtime_forever'] for d in data if d['appid'] == 578080][0]
-            csgo = '' if cs_total is None or cs_total == 0 else f"CSGO总时长: {cs_total}小时\n" \
-                                                                f"CSGO最近两周时长: {cs_2week}小时\n"
+                    d['cs_total'] = int(d['playtime_forever'] / 60)
+                    d['cs_2week'] = int(d['playtime_2weeks'] / 60) if 'playtime_2weeks' in d else 0
+            # d['pubg_total'] = [d['playtime_forever'] for d in data if d['appid'] == 578080][0]
+            csgo = '' if d['cs_total'] is None or d['cs_total'] == 0 else f"CSGO总时长: {d['cs_total']}小时\n" \
+                                                                f"CSGO最近两周时长: {d['cs_2week']}小时\n"
             games_summary = f"共{self.d_acc_info['game_count']}个游戏\n" \
-                            f"吃鸡总时长: {pubg_total}小时\n" \
-                            f"吃鸡最近两周时长: {pubg_2week}小时\n" \
+                            f"吃鸡总时长: {d['pubg_total']}小时\n" \
+                            f"吃鸡最近两周时长: {d['pubg_2week']}小时\n" \
                             f"{csgo}" \
                             f"额外信息: {self.d_acc_info['remark']}\n" \
                             f"购买信息：{self.d_acc_info['sale_info']}"

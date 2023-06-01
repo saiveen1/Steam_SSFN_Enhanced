@@ -187,4 +187,4 @@ fabric.properties
 ssfn_local
 test
 
-.db
+*.db

@@ -14,7 +14,6 @@ def get_player_bans(steam_id):
     while api_count < 4:
         if vals.apis[api_count][1] is False:
             api = vals.apis[api_count][0]
-            print(vals.apis[api_count][1])
             vals.apis[api_count][1] = True
         else:
             api_count += 1
@@ -23,7 +22,7 @@ def get_player_bans(steam_id):
               f"?key={api}&steamids={steam_id}"
         try:
             response = requests.get(url)
-            print(url, response.status_code)
+            # print(url, response.status_code)
         except requests.exceptions.ProxyError:
             print("连接错误", url, response)
             api_count += 1
@@ -62,7 +61,7 @@ def get_owned_games(steam_id):
               f"&include_extended_appinfo=true"
         try:
             response = requests.get(url)
-            print(url, response.status_code)
+            # print(url, response.status_code)
         except requests.exceptions.ProxyError:
             print("连接错误", url, response)
             api_count += 1

@@ -2,11 +2,10 @@ import threading
 import PySimpleGUI as pSG
 
 import layout
-import steam_account
+from SteamInfo import steam_account
 import util
 from steam_login import SteamLogin
-from steam_account import SteamAccount
-import values
+from SteamInfo.steam_account import SteamAccount
 
 l_csteam_d = []
 

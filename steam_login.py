@@ -11,13 +11,13 @@ import vals
 
 if vals.DEBUG:
     def debug_get_download_info(l_status):
-        for index, s in enumerate(l_status):
+        for index, status in enumerate(l_status):
             send_url = vals.l_urls[index]
-            if s == vals.STATUS.SSFNError.SSFN_DOWNLOAD_ERROR:
+            if status == vals.STATUS.SSFNError.SSFN_DOWNLOAD_ERROR:
                 print(f'{send_url}未响应')
-            elif s == vals.STATUS.SSFNError.SSFN_NOT_FOUND:
+            elif status == vals.STATUS.SSFNError.SSFN_NOT_FOUND:
                 print(f'{send_url}未找到授权')
-            elif s == vals.STATUS.SSFNError.NET_SSL_ERROR:
+            elif status == vals.STATUS.SSFNError.NET_SSL_ERROR:
                 print(f'{send_url}网络错误')
             else:
                 print(f'{send_url}成功下载')

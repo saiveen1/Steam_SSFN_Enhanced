@@ -11,7 +11,13 @@ l_urls = [r'https://ssfnbox.com/download/',
           r'http://81.68.246.116/ssfn/',
           r'http://tool.ctrl000.cc:66/ssfn/'
           ]
+
 default_account = '123----456----ssfn6094777681074169870----76561199163321234....'
+# apis = ['12A1D1DE83F9932934EDD6DF2BA00463']
+
+# bool 代表当前是否可用
+apis = [['0F6C12E262EE5101755F668842217EE7', False], ['12A1D1DE83F9932934EDD6DF2BA00463', False],
+        ['1E0CA94847EE87269CDF2A3BA9C2A237', False], ['1B5607B8C5A9317192747CC2E80686CF', False]]
 
 
 class STATUS:

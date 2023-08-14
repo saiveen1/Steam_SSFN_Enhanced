@@ -7,27 +7,6 @@ import vals
 
 
 class SteamAccount:
-    # apis = []
-    # thread = None
-    # initialized = False
-
-    # @staticmethod
-    # def get_web_api():
-    #     if not SteamInfo.initialized:
-    #         thread = threading.Thread(target=SteamInfo.thread_webapi, args=())
-    #         thread.start()
-    #         thread.join()
-    #         SteamInfo.initialized = True
-    #
-    # @staticmethod
-    # def thread_webapi():
-    #     try:
-    #         SteamInfo.apis.append(WebAPI(key='12A1D1DE83F9932934EDD6DF2BA00463'))
-    #         # SteamInfo.apis.append(WebAPI(key='0F6C12E262EE5101755F668842217EE7'))
-    #     # except requests.exceptions as exp:
-    #     except requests.exceptions.SSLError:
-    #         SteamInfo.apis = vals.STATUS.ApiERROR.API_NET_ERROR
-
     api_net_state = 200
 
     def __init__(self, str_acc, api_check=False):
@@ -86,19 +65,10 @@ class SteamAccount:
         return data['players'][0]
 
     def get_game_info(self) -> dict[str:list]:
-        # api = random.choice(SteamInfo.apis)
-        # data = api.IPlayerService.GetOwnedGames(format='json', steamid=self.steam_id,
-        #                                         include_appinfo=True,
-        #                                         include_played_free_games=False,
-        #                                         appids_filter=0,
-        #                                         include_free_sub=False,
-        #                                         language='	it',
-        #                                         include_extended_appinfo=True
-        #                                         )
         data = s_api.get_owned_games(self.steam_id)
         return data['response']
 
-    def get_multi_info(self, api_check=True) -> str:
+    def check_api_info(self, api_check=True) -> str:
         self.api_check = api_check
         if self.has_api_checked is False:
             self.get_account_info(api_check=True)
@@ -169,10 +139,7 @@ class SteamAccount:
         game_info = None
         try:
             self.has_api_checked = True
-            # if len(SteamInfo.apis) == 0:
-            #     SteamInfo.get_web_api()
-            # if SteamInfo.apis[0] == vals.STATUS.ApiERROR.API_NET_ERROR:
-            #     return -3, SteamInfo.apis
+
             bans_info = self.get_games_ban()
             game_info = self.get_game_info()
         except IndexError as exp:
